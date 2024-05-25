@@ -1,0 +1,213 @@
+@page "/converter"
+
+<h1>Konwerter</h1>
+
+<div class="container">
+    @foreach (var category in Categories)
+    {
+        <div class="row mb-3">
+            <div class="col-12">
+                <h2>@category.Name</h2>
+                
+                <div class="form-group">
+                    <label for="inputUnit" class="form-label">Jednostka wejściowa</label>
+                    <select id="inputUnit" class="form-control" @bind="category.SelectedInputUnit">
+                        @foreach (var unit in category.Units)
+                        {
+                            <option value="@unit.Key">@unit.Value</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="inputValue">Wartość wejściowa</label>
+                    <input id="inputValue" type="number" class="form-control" @bind="category.InputValue" />
+                </div>
+                <div class="form-group">
+                    <label for="outputUnit">Jednostka wyjściowa</label>
+                    <select id="outputUnit" class="form-control" @bind="category.SelectedOutputUnit">
+                        @foreach (var unit in category.Units)
+                        {
+                            <option value="@unit.Key">@unit.Value</option>
+                        }
+                    </select>
+                </div>
+                <p>
+                    Wynik: @category.ConvertedValue
+                </p>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+
+    private List<ConversionCategory> _categories = new List<ConversionCategory>
+    {
+        new ConversionCategory("Czas", new Dictionary<string, string>
+        {
+            { "seconds", "Sekundy" },
+            { "minutes", "Minuty" },
+            { "hours", "Godziny" },
+            { "days", "Dni" }
+        }),
+        new ConversionCategory("Waga", new Dictionary<string, string>
+        {
+            { "grams", "Gramy" },
+            { "kilograms", "Kilogramy" },
+            { "pounds", "Funty" }
+        }),
+        new ConversionCategory("Długość", new Dictionary<string, string>
+        {
+            { "millimeters", "Milimetry" },
+            { "centimeters", "Centymetry" },
+            { "meters", "Metry" },
+            { "kilometers", "Kilometry" },
+            { "inches", "Cale" },
+            { "feet", "Stopy" },
+            { "miles", "Mile" }
+        })
+    };
+
+    public List<ConversionCategory> Categories => _categories;
+
+    public class ConversionCategory
+    {
+        public string Name { get; set; }
+        public Dictionary<string, string> Units { get; }
+        public string SelectedInputUnit { get; set; }
+        public string SelectedOutputUnit { get; set; }
+        public double InputValue { get; set; }
+
+        public ConversionCategory(string name, Dictionary<string, string> units)
+        {
+            Name = name;
+            Units = units;
+            SelectedInputUnit = units.Keys.First();
+            SelectedOutputUnit = units.Keys.First();
+        }
+
+        public double ConvertedValue
+        {
+            get
+            {
+                switch (Name)
+                {
+                    case "Czas":
+                        return ConvertTime(InputValue, SelectedInputUnit, SelectedOutputUnit);
+                    case "Waga":
+                        return ConvertWeight(InputValue, SelectedInputUnit, SelectedOutputUnit);
+                    case "Długość":
+                        return ConvertLength(InputValue, SelectedInputUnit, SelectedOutputUnit);
+                    default:
+                        return 0;
+                }
+            }
+        }
+
+        public double ConvertTime(double value, string inputUnit, string outputUnit)
+        {
+            double result = 0;
+            switch (inputUnit)
+            {
+                case "seconds":
+                    result = value;
+                    break;
+                case "minutes":
+                    result = value * 60;
+                    break;
+                case "hours":
+                    result = value * 3600;
+                    break;
+                case "days":
+                    result = value * 86400;
+                    break;
+            }
+            switch (outputUnit)
+            {
+                case "seconds":
+                    return result;
+                case "minutes":
+                    return result / 60;
+                case "hours":
+                    return result / 3600;
+                case "days":
+                    return result / 86400;
+            }
+            return result;
+        }
+
+        public double ConvertWeight(double value, string inputUnit, string outputUnit)
+        {
+            double result = 0;
+            switch (inputUnit)
+            {
+                case "grams":
+                    result = value;
+                    break;
+                case "kilograms":
+                    result = value * 1000;
+                    break;
+                case "pounds":
+                    result = value * 453.592;
+                    break;
+            }
+            switch (outputUnit)
+            {
+                case "grams":
+                    return result;
+                case "kilograms":
+                    return result / 1000;
+                case "pounds":
+                    return result / 453.592;
+            }
+            return result;
+        }
+
+        public double ConvertLength(double value, string inputUnit, string outputUnit)
+        {
+            double result = 0;
+            switch (inputUnit)
+            {
+                case "millimeters":
+                    result = value / 1000;
+                    break;
+                case "centimeters":
+                    result = value / 100;
+                    break;
+                case "meters":
+                    result = value;
+                    break;
+                case "kilometers":
+                    result = value * 1000;
+                    break;
+                case "inches":
+                    result = value * 0.0254;
+                    break;
+                case "feet":
+                    result = value * 0.3048;
+                    break;
+                case "miles":
+                    result = value * 1609.34;
+                    break;
+            }
+            switch (outputUnit)
+            {
+                case "millimeters":
+                    return result * 1000;
+                case "centimeters":
+                    return result * 100;
+                case "meters":
+                    return result;
+                case "kilometers":
+                    return result / 1000;
+                case "inches":
+                    return result / 0.0254;
+                case "feet":
+                    return result / 0.3048;
+                case "miles":
+                    return result / 1609.34;
+            }
+            return result;
+        }
+    }
+}
